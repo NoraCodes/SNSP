@@ -5,7 +5,6 @@ import struct
 import json
 from ipaddress import ip_address
 
-# TODO: Fix selecting non-primary networks
 # TODO: Add IPv6
 
 VERSION = "0.01"
@@ -48,10 +47,12 @@ def reset_network():
 	'''
 	Reset the network settings to the default
 	'''
+	global SOURCE_IP4
+	global SITE_LOCAL_IP4
 	SOURCE_IP4 = False # False means use the default interface
 	SITE_LOCAL_IP4 = "<broadcast>"
 	
-def setup_sockets(port=PORT):
+def setup_sockets():
 	"""
 	Set up sockets for TX/RX
 	"""
