@@ -3,10 +3,27 @@
 import socket
 import struct
 import json
+import argparse
 from ipaddress import ip_address
 
+parser = argparse.ArgumentParser(description="A simple program which acts as either a client or server for SNSP, the Site-local Network Service Protocol.")
+parser.add_argument('-s', '--send', dest='send_mode', action='store_const',
+                   const=True, default=False,
+                   help='Send packets instead of waiting for them (client instead of server).')
+parser.add_argument('--source-address-ip4', dest='source_address_ip4', type=str, default=False, help='The address from which to send packets, or on which to listen for IPv4.')
+parser.add_argument('-b4', '--broadcast-address-ip4', dest='broadcast_address_ip4', type=str, default='255.255.255.255', help='The broadcast address to which to should send or from which to recieve packets for IPv4.')
+parser.add_argument('--source-address-ip6', dest='source_address_ip6', type=str, default=False, help='The address from which to send packets, or on which to listen for IPv6.')
+parser.add_argument('-b46', '--broadcast-address-ip6', dest='broadcast_address_ip6', type=str, default='ff05::', help='The broadcast address to which to should send or from which to recieve packets for IPv6.')
 
+# TODO: Finish adding args
+# TODO: Add loading service defs from file
+# TODO: Add logging
 # TODO: Add IPv6
+
+SOURCE_IP4 = ''
+SITE_LOCAL_IP4 = ''
+SOURCE_IP6 = ''
+SITE_LOCAL_IP6 = ''
 
 # Importance values, 0 to 7 from least to most likley to require notifying the user.
 IMPORTANCE_ROUTINE = 0 # Messages for network testing, timed updates, etc. Should never be shown to the user.
@@ -22,10 +39,6 @@ VERSION = "0.01"
 
 PORT = 81
 
-SOURCE_IP4 = False # False means use the default interface
-SITE_LOCAL_IP4 = "<broadcast>"
-SOURCE_IP6 = False
-SITE_LOCAL_IP6 = "" #TODO: Correct this
 
 def NewSNSPMessage(service_name, service_port, host_addr, message, importance = IMPORTANCE_DEFAULT, version = VERSION):
 	"""
@@ -47,8 +60,8 @@ def NewSNSPMessage(service_name, service_port, host_addr, message, importance = 
 		ip_address(host_addr) # If the address is not really an address, this will fail.
 	except ValueError:
 		raise ValueError("Address was not a valid IP address.")	
-	messagedict = {'version' : version, 'service_name' : service_name, \
-	'service_port' : service_port, 'host_addr' : host_addr, 'message' : message}
+	messagedict = {"version" : version, "service_name" : service_name, \
+	"service_port" : service_port, "host_addr" : host_addr, "importance" : importance, "message" : message}
 	return messagedict
 	
 def set_network(source_ip, dest_ip):
@@ -109,15 +122,74 @@ def SNSP_parse(serial_packet):
 	"""
 	Parse a packet into a dict
 	"""
-	if not isinstance(packet, str):
+	if not isinstance(serial_packet, str):
 		raise ValueError("Tried to SNSP_parse a non-string")
 	return json.loads(serial_packet)
+	
+def load_SNSP_defs_from_file(filename):
+	f = open(filename, 'r')
+	services = json.load(f)
+	#services = []
+	#for string in contents_strings:
+	#	services.append(SNSP_parse(string))
+	f.close()
+	return services
+		
+def dump_SNSP_defs_to_file(filename, services):
+	f = open(filename, 'w')
+	json.dump(services, f)
+	f.close()
 	
 
 def __SNSP_serial_print(message):
 	print(json.dumps(message))
+	return json.dumps(message)
+	
+def main():
+	services = []
+	args = parser.parse_args()
+	# Verify IP args
+	try:
+		ip_address(args.broadcast_address_ip4) # If the address is not really an address, this will fail.
+	except ValueError:
+		raise ValueError("IPv4 broadcast address was not a valid IP address.")	
+	
+	try:
+		ip_address(args.broadcast_address_ip6) # If the address is not really an address, this will fail.
+	except ValueError:
+		raise ValueError("IPv6 broadcast address was not a valid IP address.")
+	
+	if args.source_address_ip4 != False:
+		try:
+			ip_address(args.source_address_ip4) # If the address is not really an address, this will fail.
+		except ValueError:
+			raise ValueError("IPv4 source address was not a valid IP address.")	
+	
+	if args.source_address_ip6 != False:
+		try:
+			ip_address(args.source_address_ip6) # If the address is not really an address, this will fail.
+		except ValueError:
+			raise ValueError("IPv6 source address was not a valid IP address.")	
+			
+	global SOURCE_IP4
+	global SITE_LOCAL_IP4
+	global SOURCE_IP6
+	global SITE_LOCAL_IP6
+	SOURCE_IP4 = args.source_address_ip4 # False means use the default interface
+	SITE_LOCAL_IP4 = args.broadcast_address_ip4
+	SOURCE_IP6 = args.source_address_ip6
+	SITE_LOCAL_IP6 = args.broadcast_address_ip6
+	
+	#Listening mode
+	if args.send_mode:
+		return 0
+	else:
+		s = setup_sockets()
+		SNSP_listen(s)
 	
 	
 	
+if __name__ == "__main__":
+	main()
 	
 	
