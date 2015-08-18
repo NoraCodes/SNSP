@@ -17,12 +17,19 @@ An SNSP "packet" is just some JSON in a UDP broadcast (or in IPv6, multicast). I
 	
 Importance values:
 
-IMPORTANCE_ROUTINE (0):			Messages for network testing, timed updates, etc. Should never be shown to the user.
-IMPORTANCE_UTILITY (1): 		Messages for utility purpouses, e.g., SNSP ping
-IMPORTANCE_CONFIG (2):  		Messages that might result in network or application configuration changes, but that do not announce a new service 
-IMPORTANCE_DEFAULT (3): 		Default. For messages announcing services.
-IMPORTANCE_NETANNOUNCE (4):		Messages about how the network is configured that do NOT require user intervention (i.e., inform devices about optional use of OSPF)
-IMPORTANCE_SERVICESTOP (5):		Messages about cessation of network services - both temporarily and permanently.
-IMPORTANCE_USERACTION (6):		Messages that require user interaction - i.e., revealing captive portal, NETWORK DOWN IN..., etc.
-IMPORTANCE_VITAL (7):			Messages that absolutely positively must arrive and be shown to the user, if there is one. Possibly place in syslog too.
+	IMPORTANCE_ROUTINE (0):			Messages for network testing, timed updates, etc. Should never be shown to the user.
+
+	IMPORTANCE_UTILITY (1): 		Messages for utility purpouses, e.g., SNSP ping
+
+	IMPORTANCE_CONFIG (2):  		Messages that might result in network or application configuration changes, but that do not announce a new service 
+
+	IMPORTANCE_DEFAULT (3): 		Default. For messages announcing services.
+
+	IMPORTANCE_NETANNOUNCE (4):		Messages about how the network is configured that do NOT require user intervention (i.e., inform devices about optional use of OSPF)
+
+	IMPORTANCE_SERVICESTOP (5):		Messages about cessation of network services - both temporarily and permanently.
+
+	IMPORTANCE_USERACTION (6):		Messages that require user interaction - i.e., revealing captive portal, NETWORK DOWN IN..., etc.
+
+	IMPORTANCE_VITAL (7):			Messages that absolutely positively must arrive and be shown to the user, if there is one. Possibly place in syslog too.
 
