@@ -1,9 +1,12 @@
 # Site-local Network Service Protocol (SNSP) Client-server combination.
+# Can only emit service announcements, not other types of messages, 
+# 	but serves as an illustration of how the system works.
 
 import socket
 import struct
 import json
 import argparse
+import time
 from ipaddress import ip_address
 
 parser = argparse.ArgumentParser(description="A simple program which acts as either a client or server for SNSP, the Site-local Network Service Protocol.")
@@ -14,6 +17,9 @@ parser.add_argument('--source-address-ip4', dest='source_address_ip4', type=str,
 parser.add_argument('-b4', '--broadcast-address-ip4', dest='broadcast_address_ip4', type=str, default='255.255.255.255', help='The broadcast address to which to should send or from which to recieve packets for IPv4.')
 parser.add_argument('--source-address-ip6', dest='source_address_ip6', type=str, default=False, help='The address from which to send packets, or on which to listen for IPv6.')
 parser.add_argument('-b46', '--broadcast-address-ip6', dest='broadcast_address_ip6', type=str, default='ff05::', help='The broadcast address to which to should send or from which to recieve packets for IPv6.')
+parser.add_argument('-i', dest='interval', type=int, default=60, help="Time, in seconds, between each announcement of services in the services file.")
+parser.add_argument('-f', dest='file', type=str, default='services.json', help="Services file to be read.")
+
 
 # TODO: Finish adding args
 # TODO: Add loading service defs from file
@@ -146,7 +152,6 @@ def __SNSP_serial_print(message):
 	return json.dumps(message)
 	
 def main():
-	services = []
 	args = parser.parse_args()
 	# Verify IP args
 	try:
@@ -182,7 +187,12 @@ def main():
 	
 	#Listening mode
 	if args.send_mode:
-		return 0
+		services = load_SNSP_defs_from_file(args.file)
+		s = setup_sockets()
+		while True:
+			for service_message in services:
+				SNSP_send(s, service_message)
+			time.sleep(args.interval)
 	else:
 		s = setup_sockets()
 		SNSP_listen(s)
