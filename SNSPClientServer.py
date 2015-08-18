@@ -21,8 +21,6 @@ parser.add_argument('-i', dest='interval', type=int, default=60, help="Time, in 
 parser.add_argument('-f', dest='file', type=str, default='services.json', help="Services file to be read.")
 
 
-# TODO: Finish adding args
-# TODO: Add loading service defs from file
 # TODO: Add logging
 # TODO: Add IPv6
 
