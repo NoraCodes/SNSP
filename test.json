@@ -1,0 +1,1 @@
+[{"importance": 3, "host_addr": "8.8.8.8", "service_port": 88, "message": "MESSAGE", "version": "0.01", "service_name": "SNAME"}, {"importance": 3, "host_addr": "8.8.8.9", "service_port": 89, "message": "MESSAGE2", "version": "0.01", "service_name": "SNAME2"}]
