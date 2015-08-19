@@ -7,6 +7,7 @@ import struct
 import json
 import argparse
 import time
+import logging
 from ipaddress import ip_address
 
 parser = argparse.ArgumentParser(description="A simple program which acts as either a client or server for SNSP, the Site-local Network Service Protocol.")
@@ -19,9 +20,8 @@ parser.add_argument('--source-address-ip6', dest='source_address_ip6', type=str,
 parser.add_argument('-b46', '--broadcast-address-ip6', dest='broadcast_address_ip6', type=str, default='ff05::', help='The broadcast address to which to should send or from which to recieve packets for IPv6.')
 parser.add_argument('-i', dest='interval', type=int, default=60, help="Time, in seconds, between each announcement of services in the services file.")
 parser.add_argument('-f', dest='file', type=str, default='services.json', help="Services file to be read.")
+parser.add_argument('-l', dest='logfile', type=str, default='', help="File to which to write logs.")
 
-
-# TODO: Add logging
 # TODO: Add IPv6
 
 SOURCE_IP4 = ''
@@ -94,7 +94,7 @@ def setup_sockets():
 	sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, True)
 	sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 	if isinstance(SOURCE_IP4, str):
-		print("Setting up socket with a changed network.")
+		logging.debug("Setting up socket with a changed network.")
 		sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_IF, socket.inet_aton(SOURCE_IP4))
 	return sock
 		
@@ -109,7 +109,7 @@ def SNSP_send(sock, message):
 	"""
 	Send an SNSP message to all the addresses we have.
 	"""
-	print("Sending to " + SITE_LOCAL_IP4)
+	logging.info("Sending to " + SITE_LOCAL_IP4)
 	sock.sendto(bytes(json.dumps(message), 'utf-8'), (SITE_LOCAL_IP4, PORT))
 	
 	
@@ -120,7 +120,7 @@ def SNSP_listen(sock, buf_size=4096):
 	sock.bind(("", PORT))
 	while True:
 	    data, addr = sock.recvfrom(0x100)
-	    print("received from {0}: {1!r}".format(addr, data))
+	    logging.info("received from {0}: {1!r}".format(addr, data))
 	
 def SNSP_parse(serial_packet):
 	"""
@@ -151,6 +151,11 @@ def __SNSP_serial_print(message):
 	
 def main():
 	args = parser.parse_args()
+	if not args.logfile is '':
+		logging.basicConfig(filename=args.logfile,level=logging.DEBUG)
+	else:
+		logging.basicConfig(level=logging.DEBUG)
+		
 	# Verify IP args
 	try:
 		ip_address(args.broadcast_address_ip4) # If the address is not really an address, this will fail.
